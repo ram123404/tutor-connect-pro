@@ -1,73 +1,145 @@
-# Welcome to your Lovable project
 
-## Project info
+# TutorConnectPro - Home Tuition Management Platform
 
-**URL**: https://lovable.dev/projects/96104ed7-f8eb-4ec0-a0d2-b975a07c17d6
+A complete home tuition management platform that connects students with tutors for personalized learning experiences.
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+### For Students/Parents
+- Register and create student profiles
+- Search for tutors by subject, location, and experience
+- Send tuition requests to selected tutors
+- Track request statuses
+- Manage active and completed bookings
+- Extend bookings for additional months
 
-**Use Lovable**
+### For Tutors
+- Register and create tutor profiles with subjects, experience, and availability
+- Receive tuition requests from students
+- Accept or reject tuition requests
+- View active bookings and schedules
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/96104ed7-f8eb-4ec0-a0d2-b975a07c17d6) and start prompting.
+### For Admins
+- Monitor all platform users and tuition requests
+- Block/unblock users when necessary
+- Access comprehensive dashboard with platform statistics
 
-Changes made via Lovable will be committed automatically to this repo.
+## Tech Stack
 
-**Use your preferred IDE**
+### Frontend
+- React (with TypeScript)
+- React Router for navigation
+- TailwindCSS for styling
+- Shadcn UI component library
+- React Hook Form for form management
+- Zod for form validation
+- React Query for data fetching
+- Axios for API calls
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Backend
+- Node.js
+- Express.js
+- MongoDB with Mongoose ODM
+- JWT for authentication
+- Role-based access control
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Getting Started
 
-Follow these steps:
+### Prerequisites
+- Node.js (v14 or higher)
+- MongoDB instance (local or Atlas)
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Backend Setup
+1. Navigate to the backend directory:
+   ```
+   cd backend
+   ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2. Install dependencies:
+   ```
+   npm install
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+3. Set up environment variables by editing the `.env` file:
+   ```
+   PORT=5000
+   MONGODB_URI=your_mongodb_connection_string_here
+   JWT_SECRET=your_jwt_secret_key_here
+   JWT_EXPIRES_IN=30d
+   ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+4. Start the backend server:
+   ```
+   npm run dev
+   ```
 
-**Edit a file directly in GitHub**
+### Frontend Setup
+1. Navigate to the frontend directory:
+   ```
+   cd frontend
+   ```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+2. Install dependencies:
+   ```
+   npm install
+   ```
 
-**Use GitHub Codespaces**
+3. Update the API URL in `src/config.ts` if your backend isn't running on the default port:
+   ```typescript
+   export const config = {
+     apiBaseUrl: 'http://localhost:5000/api',
+   };
+   ```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+4. Start the frontend development server:
+   ```
+   npm run dev
+   ```
 
-## What technologies are used for this project?
+5. Access the application at `http://localhost:5173`
 
-This project is built with:
+## System Architecture
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+The application follows a typical client-server architecture:
 
-## How can I deploy this project?
+- **Frontend**: React application handling UI rendering and client-side logic
+- **Backend**: Express server handling API requests, business logic, and database operations
+- **Database**: MongoDB storing all application data in structured collections
 
-Simply open [Lovable](https://lovable.dev/projects/96104ed7-f8eb-4ec0-a0d2-b975a07c17d6) and click on Share -> Publish.
+### API Routes
 
-## Can I connect a custom domain to my Lovable project?
+- **Auth Routes**:
+  - POST `/api/auth/register`
+  - POST `/api/auth/login`
 
-Yes, you can!
+- **User Routes**:
+  - GET `/api/users/me`
+  - PUT `/api/users/update`
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- **Tutor Routes**:
+  - GET `/api/tutors`
+  - GET `/api/tutors/:id`
+  - PUT `/api/tutors/:id` (profile update)
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+- **Tuition Request Routes**:
+  - POST `/api/requests`
+  - GET `/api/requests`
+  - PUT `/api/requests/:id/accept`
+  - PUT `/api/requests/:id/reject`
+  - POST `/api/requests/extend` (for booking extensions)
+
+- **Admin Routes**:
+  - GET `/api/admin/users`
+  - GET `/api/admin/requests`
+  - PUT `/api/admin/users/:id/block`
+
+## Database Models
+
+- **User**: Basic information for both students and tutors
+- **TutorProfile**: Tutor-specific information
+- **TuitionRequest**: Tuition request details
+- **Booking**: Active booking details including session scheduling
+
+## License
+
+This project is proprietary and not licensed for public use.

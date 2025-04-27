@@ -1,53 +1,41 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
-import Layout from "./components/layout/Layout";
-import ProtectedRoute from "./components/auth/ProtectedRoute";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from 'sonner';
+import { AuthProvider } from './contexts/AuthContext';
+import Layout from './components/layout/Layout';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 // Pages
-import Home from "./pages/Home/Home";
-import Login from "./pages/Auth/Login";
-import Register from "./pages/Auth/Register";
-import Dashboard from "./pages/Dashboard/Dashboard";
-import NotFound from "./pages/NotFound";
+import Home from './pages/Home/Home';
+import Login from './pages/Auth/Login';
+import Register from './pages/Auth/Register';
+import Dashboard from './pages/Dashboard/Dashboard';
+import Tutors from './pages/Tutors/Tutors';
+import TutorProfile from './pages/Tutors/TutorProfile';
+import RequestTuition from './pages/Tutors/RequestTuition';
+import Requests from './pages/Requests/Requests';
+import Bookings from './pages/Bookings/Bookings';
+import Profile from './pages/Profile/Profile';
+import Users from './pages/Admin/Users';
+import AdminRequests from './pages/Admin/Requests';
+import NotFound from './pages/NotFound';
 
-// Tutor Related Pages
-import Tutors from "./pages/Tutors/Tutors";
-import TutorProfile from "./pages/Tutors/TutorProfile";
-import RequestTuition from "./pages/Tutors/RequestTuition";
-
+// Create a client
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+        <Router>
           <Layout>
             <Routes>
-              {/* Public Routes */}
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/tutors" element={<Tutors />} />
-              <Route path="/tutors/:id" element={<TutorProfile />} />
               
-              {/* Protected Routes */}
-              <Route 
-                path="/request-tuition" 
-                element={
-                  <ProtectedRoute>
-                    <RequestTuition />
-                  </ProtectedRoute>
-                } 
-              />
-              
+              {/* Protected routes for all authenticated users */}
               <Route 
                 path="/dashboard" 
                 element={
@@ -56,13 +44,59 @@ const App = () => (
                   </ProtectedRoute>
                 } 
               />
-              
-              {/* Admin Routes */}
               <Route 
-                path="/admin" 
+                path="/profile" 
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Tutor routes */}
+              <Route path="/tutors" element={<Tutors />} />
+              <Route path="/tutors/:id" element={<TutorProfile />} />
+              <Route 
+                path="/request-tuition" 
+                element={
+                  <ProtectedRoute allowedRoles={['student']}>
+                    <RequestTuition />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Requests and bookings routes */}
+              <Route 
+                path="/requests" 
+                element={
+                  <ProtectedRoute>
+                    <Requests />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/bookings" 
+                element={
+                  <ProtectedRoute>
+                    <Bookings />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Admin routes */}
+              <Route 
+                path="/admin/users" 
                 element={
                   <ProtectedRoute allowedRoles={['admin']}>
-                    <Dashboard />
+                    <Users />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/requests" 
+                element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <AdminRequests />
                   </ProtectedRoute>
                 } 
               />
@@ -71,10 +105,11 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Layout>
-        </BrowserRouter>
+        </Router>
+        <Toaster position="top-right" />
       </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+    </QueryClientProvider>
+  );
+}
 
 export default App;

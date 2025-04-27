@@ -1,229 +1,213 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookOpen, CheckCircle, Users, Calendar } from 'lucide-react';
+import { CheckCircle2, Notebook, School, Calendar, Star, ArrowRight } from 'lucide-react';
 
 const Home: React.FC = () => {
+  const { isAuthenticated, user } = useAuth();
+
+  const features = [
+    {
+      icon: <Notebook className="h-10 w-10 text-primary" />,
+      title: "Find Qualified Tutors",
+      description: "Browse through profiles of experienced tutors in your area and filter by subject, location, and more."
+    },
+    {
+      icon: <Calendar className="h-10 w-10 text-primary" />,
+      title: "Flexible Scheduling",
+      description: "Book tutors for sessions that fit your schedule with customizable days, times, and duration."
+    },
+    {
+      icon: <School className="h-10 w-10 text-primary" />,
+      title: "Subject Variety",
+      description: "Find tutors for any subject you need help with, from mathematics and science to languages and arts."
+    }
+  ];
+
+  const testimonials = [
+    {
+      text: "TutorConnectPro helped me find the perfect tutor for my daughter. Her grades have improved significantly since then!",
+      author: "Sarah M., Parent"
+    },
+    {
+      text: "As a tutor, this platform makes it easy to connect with students and manage my schedule. Highly recommended!",
+      author: "Professor John D., Mathematics Tutor"
+    },
+    {
+      text: "I was struggling with physics, but after just a month with my tutor from TutorConnectPro, I'm understanding concepts better than ever.",
+      author: "Alex T., Student"
+    }
+  ];
+
+  const steps = [
+    {
+      number: "01",
+      title: "Create an Account",
+      description: "Sign up as a student or tutor in minutes"
+    },
+    {
+      number: "02",
+      title: "Find Your Match",
+      description: "Browse tutors or wait for student requests"
+    },
+    {
+      number: "03",
+      title: "Book Sessions",
+      description: "Schedule tutoring sessions that fit your calendar"
+    },
+    {
+      number: "04",
+      title: "Learn & Grow",
+      description: "Enjoy personalized education and track progress"
+    }
+  ];
+
   return (
-    <div className="min-h-screen">
+    <div className="animate-fade-in">
       {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-br from-tutor to-student text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Find The Perfect Home Tutor
+      <section className="py-12 md:py-20 px-4">
+        <div className="max-w-5xl mx-auto text-center">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            Connect with Expert Tutors for Personalized Learning
           </h1>
-          <p className="text-xl mb-8 max-w-2xl mx-auto">
-            Connect with qualified tutors for personalized learning experiences tailored to your needs.
+          <p className="text-lg md:text-xl text-gray-600 mb-8 md:mb-12 max-w-3xl mx-auto">
+            TutorConnectPro helps you find qualified tutors in your area for any subject you need. Book sessions, track progress, and achieve your academic goals.
           </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link to="/register">
-              <Button size="lg" variant="secondary">
-                Get Started
-              </Button>
-            </Link>
-            <Link to="/tutors">
-              <Button size="lg" variant="outline" className="bg-transparent text-white border-white hover:bg-white/10">
-                Browse Tutors
-              </Button>
-            </Link>
+          <div className="flex flex-wrap gap-4 justify-center">
+            {isAuthenticated ? (
+              <Link to="/dashboard">
+                <Button size="lg" className="text-base">
+                  Go to Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link to="/register">
+                  <Button size="lg" className="text-base">
+                    Get Started
+                  </Button>
+                </Link>
+                <Link to="/login">
+                  <Button variant="outline" size="lg" className="text-base">
+                    Login
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
+      {/* Features Section */}
+      <section className="py-12 md:py-20 px-4 bg-gray-50">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Why Choose TutorConnectPro?
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Our platform makes it easy for students to connect with experienced tutors and for tutors to grow their teaching business.
+            </p>
+          </div>
+
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="flex justify-center mb-4">
-                <div className="bg-primary/10 rounded-full p-4">
-                  <Users className="h-8 w-8 text-primary" />
-                </div>
+            {features.map((feature, index) => (
+              <div key={index} className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                <div className="mb-4">{feature.icon}</div>
+                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                <p className="text-gray-600">{feature.description}</p>
               </div>
-              <h3 className="text-xl font-bold mb-2">Find a Tutor</h3>
-              <p className="text-muted-foreground">
-                Browse through our qualified tutors based on subject, location, and experience.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="flex justify-center mb-4">
-                <div className="bg-primary/10 rounded-full p-4">
-                  <CheckCircle className="h-8 w-8 text-primary" />
-                </div>
-              </div>
-              <h3 className="text-xl font-bold mb-2">Send a Request</h3>
-              <p className="text-muted-foreground">
-                Send a tuition request with your specific requirements and schedule.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="flex justify-center mb-4">
-                <div className="bg-primary/10 rounded-full p-4">
-                  <Calendar className="h-8 w-8 text-primary" />
-                </div>
-              </div>
-              <h3 className="text-xl font-bold mb-2">Start Learning</h3>
-              <p className="text-muted-foreground">
-                Once your request is accepted, begin your personalized learning journey.
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Why Choose TutorConnectPro</h2>
+      {/* How It Works Section */}
+      <section className="py-12 md:py-20 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              How It Works
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Getting started with TutorConnectPro is simple and straightforward
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-4 gap-6">
+            {steps.map((step, index) => (
+              <div key={index} className="text-center">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 text-primary font-semibold mb-4">
+                  {step.number}
+                </div>
+                <h3 className="text-lg font-semibold mb-2">{step.title}</h3>
+                <p className="text-gray-600">{step.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-12 md:py-20 px-4 bg-gray-50">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              What Our Users Say
+            </h2>
+          </div>
+
           <div className="grid md:grid-cols-3 gap-8">
-            <Card>
-              <CardHeader>
-                <CardTitle>Qualified Tutors</CardTitle>
-                <CardDescription>
-                  All tutors are thoroughly vetted for qualifications and experience.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2">
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
-                    <span>Experienced educators</span>
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
-                    <span>Subject matter experts</span>
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
-                    <span>Verified credentials</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Flexible Scheduling</CardTitle>
-                <CardDescription>
-                  Choose the timing and frequency that works best for you.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2">
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
-                    <span>Custom schedules</span>
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
-                    <span>Regular sessions</span>
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
-                    <span>Extend as needed</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Personalized Learning</CardTitle>
-                <CardDescription>
-                  Tutoring tailored to your specific learning needs and goals.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2">
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
-                    <span>Customized approach</span>
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
-                    <span>One-on-one attention</span>
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
-                    <span>Progress tracking</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
+            {testimonials.map((testimonial, index) => (
+              <div key={index} className="bg-white p-6 rounded-lg shadow-sm">
+                <div className="flex items-center mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                <p className="text-gray-600 mb-4 italic">"{testimonial.text}"</p>
+                <p className="font-medium">{testimonial.author}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-6">Ready to Start Learning?</h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto text-muted-foreground">
-            Join thousands of students who have improved their academic performance with our qualified tutors.
+      {/* CTA Section */}
+      <section className="py-12 md:py-20 px-4 bg-primary-50">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            Ready to Transform Your Learning Experience?
+          </h2>
+          <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+            Join thousands of students and tutors on TutorConnectPro today and start your journey towards academic excellence.
           </p>
-          <div className="flex justify-center gap-4">
-            <Link to="/register">
-              <Button size="lg">
-                Sign Up Now
-              </Button>
-            </Link>
-            <Link to="/login">
-              <Button size="lg" variant="outline">
-                Login
-              </Button>
-            </Link>
+          <div className="flex flex-wrap gap-4 justify-center">
+            {isAuthenticated ? (
+              <Link to="/dashboard">
+                <Button size="lg" className="text-base">
+                  Go to Dashboard <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link to="/register">
+                  <Button size="lg" className="text-base">
+                    Get Started <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+                <Link to="/login">
+                  <Button variant="outline" size="lg" className="text-base">
+                    Login
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-800 text-white py-12">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between">
-            <div className="mb-8 md:mb-0">
-              <div className="flex items-center mb-4">
-                <BookOpen className="h-8 w-8 text-primary" />
-                <span className="ml-2 text-2xl font-bold">TutorConnectPro</span>
-              </div>
-              <p className="max-w-md text-gray-300">
-                Connecting students with qualified tutors for personalized learning experiences.
-              </p>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
-              <div>
-                <h3 className="text-lg font-medium mb-4">For Students</h3>
-                <ul className="space-y-2">
-                  <li><a href="#" className="text-gray-300 hover:text-white">Find Tutors</a></li>
-                  <li><a href="#" className="text-gray-300 hover:text-white">How It Works</a></li>
-                  <li><a href="#" className="text-gray-300 hover:text-white">Pricing</a></li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="text-lg font-medium mb-4">For Tutors</h3>
-                <ul className="space-y-2">
-                  <li><a href="#" className="text-gray-300 hover:text-white">Become a Tutor</a></li>
-                  <li><a href="#" className="text-gray-300 hover:text-white">Resources</a></li>
-                  <li><a href="#" className="text-gray-300 hover:text-white">Success Stories</a></li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="text-lg font-medium mb-4">Company</h3>
-                <ul className="space-y-2">
-                  <li><a href="#" className="text-gray-300 hover:text-white">About Us</a></li>
-                  <li><a href="#" className="text-gray-300 hover:text-white">Contact</a></li>
-                  <li><a href="#" className="text-gray-300 hover:text-white">Privacy Policy</a></li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-300">
-            <p>&copy; {new Date().getFullYear()} TutorConnectPro. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };
