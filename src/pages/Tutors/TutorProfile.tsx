@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,63 +15,88 @@ import {
   DollarSign,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { tutorAPI } from '@/api';
+import { toast } from 'sonner';
 
-// Mock data for tutors
-const mockTutors = [
-  {
-    id: '1',
-    name: 'Prof. Robert Johnson',
-    profilePic: 'https://randomuser.me/api/portraits/men/32.jpg',
-    subjects: ['Mathematics', 'Physics'],
-    experience: '8 years',
-    location: 'New York, Downtown',
-    rating: 4.8,
-    hourlyRate: 35,
-    monthlyRate: 450,
-    availability: 'Mon, Wed, Fri - Evening',
-    about: 'I am an experienced mathematics and physics tutor with a Ph.D. in Applied Mathematics. I specialize in helping high school and undergraduate students master difficult concepts through practical examples and clear explanations.',
-    education: [
-      'Ph.D. in Applied Mathematics, MIT',
-      'M.S. in Physics, Stanford University',
-      'B.S. in Mathematics, Cornell University'
-    ],
-    reviews: [
-      { id: 1, name: 'Alex J.', rating: 5, comment: 'Prof. Johnson helped my daughter raise her calculus grade from a C to an A in just two months. Excellent tutor!', date: '2024-03-15' },
-      { id: 2, name: 'Sarah M.', rating: 4, comment: 'Very knowledgeable and patient. My son now enjoys physics thanks to Prof. Johnson.', date: '2024-02-28' }
-    ]
-  },
-  {
-    id: '2',
-    name: 'Dr. Emily Wilson',
-    profilePic: 'https://randomuser.me/api/portraits/women/44.jpg',
-    subjects: ['Chemistry', 'Biology'],
-    experience: '12 years',
-    location: 'New York, Uptown',
-    rating: 4.9,
-    hourlyRate: 40,
-    monthlyRate: 520,
-    availability: 'Tue, Thu, Sat - Morning',
-    about: 'Former university professor with over a decade of teaching experience in Chemistry and Biology. I focus on building strong foundations and critical thinking skills that help students excel in science subjects.',
-    education: [
-      'Ph.D. in Biochemistry, Harvard University',
-      'M.S. in Chemistry, UC Berkeley',
-      'B.S. in Biology, UCLA'
-    ],
-    reviews: [
-      { id: 1, name: 'Michael T.', rating: 5, comment: 'Dr. Wilson is amazing! Her teaching methods made organic chemistry much easier to understand.', date: '2024-03-22' },
-      { id: 2, name: 'Jennifer K.', rating: 5, comment: 'My daughter got into her dream college thanks to Dr. Wilson\'s preparation for AP Biology.', date: '2024-01-17' }
-    ]
-  },
-  // ... add the other tutors here
+interface TutorType {
+  _id: string;
+  name: string;
+  email: string;
+  profilePic: string;
+  address: {
+    city: string;
+    area: string;
+  };
+  tutorProfile: {
+    subjects: string[];
+    experience: number;
+    availability: string;
+    rating: number;
+    monthlyRate: number;
+    about: string;
+    education: string[];
+  };
+}
+
+interface ReviewType {
+  id: string;
+  name: string;
+  rating: number;
+  comment: string;
+  date: string;
+}
+
+// Mock reviews (since we don't have a reviews feature in the backend yet)
+const mockReviews: ReviewType[] = [
+  { id: '1', name: 'Alex J.', rating: 5, comment: 'Excellent tutor! Helped me understand complex topics.', date: '2024-03-15' },
+  { id: '2', name: 'Sarah M.', rating: 4, comment: 'Very knowledgeable and patient.', date: '2024-02-28' }
 ];
 
 const TutorProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const tutor = mockTutors.find((t) => t.id === id);
+  const [tutor, setTutor] = useState<TutorType | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  if (!tutor) {
-    return <Navigate to="/tutors" replace />;
+  useEffect(() => {
+    if (id) {
+      fetchTutor(id);
+    }
+  }, [id]);
+
+  const fetchTutor = async (tutorId: string) => {
+    try {
+      setLoading(true);
+      const response = await tutorAPI.getTutor(tutorId);
+      setTutor(response.data.data.tutor);
+    } catch (error) {
+      toast.error('Failed to fetch tutor information');
+      setError('Could not load tutor profile');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <p>Loading tutor profile...</p>
+      </div>
+    );
   }
+
+  if (error || !tutor) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh]">
+        <p className="text-red-500 mb-4">{error || 'Tutor not found'}</p>
+        <Link to="/tutors">
+          <Button>Back to Tutors</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  const location = tutor.address ? `${tutor.address.city}, ${tutor.address.area}` : 'Location not specified';
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -88,7 +113,7 @@ const TutorProfile: React.FC = () => {
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 h-32 w-32 overflow-hidden rounded-full">
               <img
-                src={tutor.profilePic}
+                src={tutor.profilePic || 'https://randomuser.me/api/portraits/men/32.jpg'}
                 alt={tutor.name}
                 className="h-full w-full object-cover"
               />
@@ -96,29 +121,29 @@ const TutorProfile: React.FC = () => {
             <CardTitle className="text-xl">{tutor.name}</CardTitle>
             <div className="flex items-center justify-center space-x-1 text-amber-500">
               <Star className="h-4 w-4 fill-amber-500" />
-              <span>{tutor.rating} (25 reviews)</span>
+              <span>{tutor.tutorProfile?.rating || 'New'}</span>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center text-sm">
               <Briefcase className="h-4 w-4 mr-2 text-primary" />
-              <span>{tutor.experience} experience</span>
+              <span>{tutor.tutorProfile?.experience} years experience</span>
             </div>
             <div className="flex items-center text-sm">
               <MapPin className="h-4 w-4 mr-2 text-primary" />
-              <span>{tutor.location}</span>
+              <span>{location}</span>
             </div>
             <div className="flex items-center text-sm">
               <Clock className="h-4 w-4 mr-2 text-primary" />
-              <span>{tutor.availability}</span>
+              <span>{tutor.tutorProfile?.availability}</span>
             </div>
             <div className="flex items-center text-sm">
               <DollarSign className="h-4 w-4 mr-2 text-primary" />
-              <span>${tutor.monthlyRate}/month</span>
+              <span>${tutor.tutorProfile?.monthlyRate}/month</span>
             </div>
             <div className="flex flex-wrap gap-1 mt-2">
               <BookOpen className="h-4 w-4 mr-2 text-primary" />
-              {tutor.subjects.map((subject) => (
+              {tutor.tutorProfile?.subjects.map((subject) => (
                 <Badge key={subject} variant="secondary" className="font-normal">
                   {subject}
                 </Badge>
@@ -126,7 +151,7 @@ const TutorProfile: React.FC = () => {
             </div>
           </CardContent>
           <CardFooter>
-            <Link to={`/request-tuition?tutor=${tutor.id}`} className="w-full">
+            <Link to={`/request-tuition?tutor=${tutor._id}`} className="w-full">
               <Button className="w-full">Request Tuition</Button>
             </Link>
           </CardFooter>
@@ -146,7 +171,7 @@ const TutorProfile: React.FC = () => {
                   <CardTitle>About {tutor.name}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p>{tutor.about}</p>
+                  <p>{tutor.tutorProfile?.about || 'No information provided.'}</p>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -156,11 +181,15 @@ const TutorProfile: React.FC = () => {
                   <CardTitle>Education & Qualifications</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ul className="space-y-2 list-disc pl-5">
-                    {tutor.education.map((edu, index) => (
-                      <li key={index}>{edu}</li>
-                    ))}
-                  </ul>
+                  {tutor.tutorProfile?.education && tutor.tutorProfile.education.length > 0 ? (
+                    <ul className="space-y-2 list-disc pl-5">
+                      {tutor.tutorProfile.education.map((edu, index) => (
+                        <li key={index}>{edu}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p>No education information provided.</p>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -171,7 +200,7 @@ const TutorProfile: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {tutor.reviews?.map((review) => (
+                    {mockReviews.map((review) => (
                       <div key={review.id} className="border-b pb-4 last:border-0">
                         <div className="flex items-center justify-between">
                           <div className="font-medium">{review.name}</div>
@@ -187,7 +216,7 @@ const TutorProfile: React.FC = () => {
                         <p className="mt-2">{review.comment}</p>
                       </div>
                     ))}
-                    {(!tutor.reviews || tutor.reviews.length === 0) && (
+                    {mockReviews.length === 0 && (
                       <div className="text-center py-8 text-muted-foreground">
                         No reviews yet
                       </div>
