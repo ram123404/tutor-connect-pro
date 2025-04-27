@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,24 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				tutor: {
+					DEFAULT: "#6366f1",
+					foreground: "#ffffff",
+					light: "#a5b4fc",
+					dark: "#4f46e5",
+				},
+				student: {
+					DEFAULT: "#8b5cf6",
+					foreground: "#ffffff",
+					light: "#c4b5fd",
+					dark: "#7c3aed",
+				},
+				admin: {
+					DEFAULT: "#4f46e5",
+					foreground: "#ffffff",
+					light: "#818cf8",
+					dark: "#4338ca",
 				}
 			},
 			borderRadius: {
@@ -84,11 +103,22 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'fade-in': {
+					from: {
+						opacity: '0',
+						transform: 'translateY(10px)'
+					},
+					to: {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.3s ease-out'
 			}
 		}
 	},
