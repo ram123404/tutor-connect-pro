@@ -15,6 +15,11 @@ import Register from "./pages/Auth/Register";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import NotFound from "./pages/NotFound";
 
+// Tutor Related Pages
+import Tutors from "./pages/Tutors/Tutors";
+import TutorProfile from "./pages/Tutors/TutorProfile";
+import RequestTuition from "./pages/Tutors/RequestTuition";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -30,8 +35,19 @@ const App = () => (
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/tutors" element={<Tutors />} />
+              <Route path="/tutors/:id" element={<TutorProfile />} />
               
               {/* Protected Routes */}
+              <Route 
+                path="/request-tuition" 
+                element={
+                  <ProtectedRoute>
+                    <RequestTuition />
+                  </ProtectedRoute>
+                } 
+              />
+              
               <Route 
                 path="/dashboard" 
                 element={
