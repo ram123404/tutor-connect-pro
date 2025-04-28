@@ -9,19 +9,31 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { UserRole } from '@/types';
 import { BookOpen } from 'lucide-react';
+import { toast } from 'sonner';
 
 const Login: React.FC = () => {
-  const { login, isAuthenticated, isLoading } = useAuth();
+  const { login, isAuthenticated, isLoading, user } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<UserRole>('student');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Additional validation for admin login
+    if (role === 'admin' && !email.endsWith('@admin.com')) {
+      toast.error('Admin login must use an @admin.com email');
+      return;
+    }
+
     await login(email, password, role);
   };
 
-  if (isAuthenticated) {
+  // Redirect based on role after authentication
+  if (isAuthenticated && user) {
+    if (user.role === 'admin') {
+      return <Navigate to="/admin/users" replace />;
+    }
     return <Navigate to="/dashboard" replace />;
   }
 

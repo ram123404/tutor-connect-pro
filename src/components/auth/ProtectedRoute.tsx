@@ -3,6 +3,7 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserRole } from '@/types';
+import { toast } from 'sonner';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -24,15 +25,18 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (!isAuthenticated) {
+    toast.error('Please log in to access this page');
     return <Navigate to="/login" replace />;
   }
 
-  // If roles are specified, check if user has one of those roles
+  // Check role access
   if (allowedRoles && allowedRoles.length > 0) {
     if (!user || !allowedRoles.includes(user.role)) {
-      // Redirect to appropriate dashboard based on role
+      toast.error('You do not have permission to access this page');
+      
+      // Redirect based on role
       if (user?.role === 'admin') {
-        return <Navigate to="/admin" replace />;
+        return <Navigate to="/admin/users" replace />;
       } else if (user?.role === 'tutor') {
         return <Navigate to="/dashboard" replace />;
       } else {
