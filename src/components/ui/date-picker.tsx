@@ -11,6 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { DayPickerSingleProps, DayPickerRangeProps, DayPickerMultipleProps } from "react-day-picker"
 
 interface DatePickerProps {
   date?: Date
@@ -56,14 +57,36 @@ export function DatePicker({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode={mode}
-            selected={date}
-            onSelect={handleSelect}
-            disabled={disabled}
-            initialFocus={initialFocus}
-            className="p-3 pointer-events-auto"
-          />
+          {mode === "single" && (
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={handleSelect}
+              disabled={disabled}
+              initialFocus={initialFocus}
+              className="p-3 pointer-events-auto"
+            />
+          )}
+          {mode === "range" && (
+            <Calendar
+              mode="range"
+              selected={{ from: date, to: date }}
+              onSelect={(range) => handleSelect(range?.from)}
+              disabled={disabled}
+              initialFocus={initialFocus}
+              className="p-3 pointer-events-auto"
+            />
+          )}
+          {mode === "multiple" && (
+            <Calendar
+              mode="multiple"
+              selected={date ? [date] : []}
+              onSelect={(dates) => handleSelect(dates?.[0])}
+              disabled={disabled}
+              initialFocus={initialFocus}
+              className="p-3 pointer-events-auto"
+            />
+          )}
         </PopoverContent>
       </Popover>
     </div>
