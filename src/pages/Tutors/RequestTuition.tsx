@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { tuitionRequestSchema, type TuitionRequestFormData } from '@/schemas/tuitionRequest';
@@ -10,22 +11,32 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Calendar } from 'lucide-react';
-import { DatePicker } from "@/components/ui/date-picker"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
+import { DatePicker } from "@/components/ui/date-picker";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 const RequestTuition = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const tutorId = searchParams.get('tutor');
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<TuitionRequestFormData>({
     resolver: zodResolver(tuitionRequestSchema),
+    defaultValues: {
+      startDate: new Date(),
+    }
   });
+
+  // Update form when date changes
+  React.useEffect(() => {
+    setValue('startDate', selectedDate);
+  }, [selectedDate, setValue]);
 
   const onSubmit = async (data: TuitionRequestFormData) => {
     if (!tutorId) {
@@ -64,6 +75,7 @@ const RequestTuition = () => {
                   id="subject"
                   placeholder="e.g., Math, Physics, English"
                   {...register('subject')}
+                  className={errors.subject ? "border-red-500" : ""}
                 />
                 {errors.subject && (
                   <p className="text-red-500 text-sm">{errors.subject.message}</p>
@@ -75,6 +87,7 @@ const RequestTuition = () => {
                   id="gradeLevel"
                   placeholder="e.g., 10th Grade, 12th Grade"
                   {...register('gradeLevel')}
+                  className={errors.gradeLevel ? "border-red-500" : ""}
                 />
                 {errors.gradeLevel && (
                   <p className="text-red-500 text-sm">{errors.gradeLevel.message}</p>
@@ -82,70 +95,18 @@ const RequestTuition = () => {
               </div>
               <div className="space-y-2">
                 <Label>Preferred Days</Label>
-                <div className="flex space-x-2">
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="monday"
-                      value="Monday"
-                      {...register('preferredDays')}
-                    />
-                    <Label htmlFor="monday">Monday</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="tuesday"
-                      value="Tuesday"
-                      {...register('preferredDays')}
-                    />
-                    <Label htmlFor="tuesday">Tuesday</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="wednesday"
-                      value="Wednesday"
-                      {...register('preferredDays')}
-                    />
-                    <Label htmlFor="wednesday">Wednesday</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="thursday"
-                      value="Thursday"
-                      {...register('preferredDays')}
-                    />
-                    <Label htmlFor="thursday">Thursday</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="friday"
-                      value="Friday"
-                      {...register('preferredDays')}
-                    />
-                    <Label htmlFor="friday">Friday</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="saturday"
-                      value="Saturday"
-                      {...register('preferredDays')}
-                    />
-                    <Label htmlFor="saturday">Saturday</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="sunday"
-                      value="Sunday"
-                      {...register('preferredDays')}
-                    />
-                    <Label htmlFor="sunday">Sunday</Label>
-                  </div>
+                <div className="flex flex-wrap gap-2">
+                  {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
+                    <div key={day} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id={day.toLowerCase()}
+                        value={day}
+                        {...register('preferredDays')}
+                      />
+                      <Label htmlFor={day.toLowerCase()}>{day}</Label>
+                    </div>
+                  ))}
                 </div>
                 {errors.preferredDays && (
                   <p className="text-red-500 text-sm">{errors.preferredDays.message}</p>
@@ -157,6 +118,7 @@ const RequestTuition = () => {
                   id="preferredTime"
                   placeholder="e.g., 3:00 PM - 5:00 PM"
                   {...register('preferredTime')}
+                  className={errors.preferredTime ? "border-red-500" : ""}
                 />
                 {errors.preferredTime && (
                   <p className="text-red-500 text-sm">{errors.preferredTime.message}</p>
@@ -169,6 +131,7 @@ const RequestTuition = () => {
                   type="number"
                   defaultValue={1}
                   {...register('duration', { valueAsNumber: true })}
+                  className={errors.duration ? "border-red-500" : ""}
                 />
                 {errors.duration && (
                   <p className="text-red-500 text-sm">{errors.duration.message}</p>
@@ -181,13 +144,13 @@ const RequestTuition = () => {
                     <Button
                       variant={"outline"}
                       className={cn(
-                        "w-[240px] justify-start text-left font-normal",
-                        !register('startDate') && "text-muted-foreground"
+                        "w-full justify-start text-left font-normal",
+                        !selectedDate && "text-muted-foreground"
                       )}
                     >
                       <Calendar className="mr-2 h-4 w-4" />
-                      {register('startDate') ? (
-                        new Date().toLocaleDateString()
+                      {selectedDate ? (
+                        selectedDate.toLocaleDateString()
                       ) : (
                         <span>Pick a date</span>
                       )}
@@ -196,9 +159,9 @@ const RequestTuition = () => {
                   <PopoverContent className="w-auto p-0" align="center" side="bottom">
                     <DatePicker
                       mode="single"
-                      selected={new Date()}
-                      onSelect={(date) => register('startDate')}
-                      disabled={isSubmitting}
+                      selected={selectedDate}
+                      onSelect={(date) => date && setSelectedDate(date)}
+                      disabled={(date) => date < new Date()}
                       initialFocus
                     />
                   </PopoverContent>

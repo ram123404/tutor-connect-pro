@@ -10,6 +10,16 @@ export interface User {
   role: UserRole;
   profilePic?: string;
   createdAt: string;
+  phoneNumber?: string;
+  address?: {
+    city: string;
+    area: string;
+  };
+  subjects?: string[];
+  experience?: number;
+  availability?: string;
+  monthlyFee?: number;
+  bio?: string;
 }
 
 // Tutor Profile Interface
@@ -56,6 +66,7 @@ export interface Booking {
   requestId: string;
   studentId: string;
   tutorId: string;
+  subject: string;
   startDate: string;
   endDate: string;
   daysOfWeek: string[];

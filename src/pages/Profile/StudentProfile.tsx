@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { userAPI } from '@/api';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import { StudentProfile as StudentProfileType } from '@/types';
 
 const profileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -33,10 +34,10 @@ const StudentProfile = () => {
     resolver: zodResolver(profileSchema),
     defaultValues: {
       name: user?.name || '',
-      phoneNumber: user?.phoneNumber || '',
+      phoneNumber: (user as StudentProfileType)?.phoneNumber || '',
       address: {
-        city: user?.address?.city || '',
-        area: user?.address?.area || '',
+        city: (user as StudentProfileType)?.address?.city || '',
+        area: (user as StudentProfileType)?.address?.area || '',
       },
     },
   });
@@ -64,8 +65,11 @@ const StudentProfile = () => {
               <Input
                 id="name"
                 {...register('name')}
-                error={errors.name?.message}
+                className={errors.name ? "border-red-500" : ""}
               />
+              {errors.name && (
+                <p className="text-red-500 text-sm">{errors.name.message}</p>
+              )}
             </div>
             
             <div className="space-y-2">
@@ -73,8 +77,11 @@ const StudentProfile = () => {
               <Input
                 id="phoneNumber"
                 {...register('phoneNumber')}
-                error={errors.phoneNumber?.message}
+                className={errors.phoneNumber ? "border-red-500" : ""}
               />
+              {errors.phoneNumber && (
+                <p className="text-red-500 text-sm">{errors.phoneNumber.message}</p>
+              )}
             </div>
             
             <div className="grid gap-4 md:grid-cols-2">
@@ -83,8 +90,11 @@ const StudentProfile = () => {
                 <Input
                   id="city"
                   {...register('address.city')}
-                  error={errors.address?.city?.message}
+                  className={errors.address?.city ? "border-red-500" : ""}
                 />
+                {errors.address?.city && (
+                  <p className="text-red-500 text-sm">{errors.address.city.message}</p>
+                )}
               </div>
               
               <div className="space-y-2">
@@ -92,8 +102,11 @@ const StudentProfile = () => {
                 <Input
                   id="area"
                   {...register('address.area')}
-                  error={errors.address?.area?.message}
+                  className={errors.address?.area ? "border-red-500" : ""}
                 />
+                {errors.address?.area && (
+                  <p className="text-red-500 text-sm">{errors.address.area.message}</p>
+                )}
               </div>
             </div>
           </CardContent>
