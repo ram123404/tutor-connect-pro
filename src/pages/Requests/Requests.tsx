@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,10 +6,31 @@ import { requestAPI } from '@/api';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, Check, X, Clock, ExternalLink } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, isValid, parseISO } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Navigate, Link } from 'react-router-dom';
+
+// Helper function to safely parse and validate dates
+const parseDate = (dateString: string | Date | null | undefined): Date | null => {
+  if (!dateString) return null;
+  
+  let date: Date;
+  if (typeof dateString === 'string') {
+    // Try parsing as ISO string first, then as regular date
+    date = dateString.includes('T') ? parseISO(dateString) : new Date(dateString);
+  } else {
+    date = new Date(dateString);
+  }
+  
+  return isValid(date) ? date : null;
+};
+
+// Helper function to safely format dates
+const formatDate = (date: Date | null, formatString: string, fallback: string = 'Invalid date'): string => {
+  if (!date || !isValid(date)) return fallback;
+  return format(date, formatString);
+};
 
 const RequestCard: React.FC<{
   request: any;
@@ -20,8 +40,10 @@ const RequestCard: React.FC<{
 }> = ({ request, userRole, onAccept, onReject }) => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   
-  const startDate = new Date(request.startDate);
-  const endDate = new Date(request.endDate);
+  // Safely parse dates
+  const startDate = parseDate(request.startDate);
+  const endDate = parseDate(request.endDate);
+  const createdDate = parseDate(request.createdAt);
   
   // Format days array to readable string
   const formattedDays = Array.isArray(request.preferredDays) 
@@ -61,7 +83,7 @@ const RequestCard: React.FC<{
         <div className="flex items-center text-sm">
           <Calendar className="h-4 w-4 mr-2 text-primary" />
           <span>
-            {format(startDate, 'MMM d, yyyy')} - {format(endDate, 'MMM d, yyyy')}
+            {formatDate(startDate, 'MMM d, yyyy')} - {formatDate(endDate, 'MMM d, yyyy')}
           </span>
         </div>
         <div className="flex items-center text-sm">
@@ -95,7 +117,7 @@ const RequestCard: React.FC<{
                 
                 <div className="font-medium">Period:</div>
                 <div className="col-span-2">
-                  {format(startDate, 'MMMM d, yyyy')} - {format(endDate, 'MMMM d, yyyy')}
+                  {formatDate(startDate, 'MMMM d, yyyy')} - {formatDate(endDate, 'MMMM d, yyyy')}
                 </div>
                 
                 <div className="font-medium">Duration:</div>
@@ -126,7 +148,7 @@ const RequestCard: React.FC<{
                 
                 <div className="font-medium">Requested on:</div>
                 <div className="col-span-2">
-                  {format(new Date(request.createdAt), 'MMMM d, yyyy')}
+                  {formatDate(createdDate, 'MMMM d, yyyy')}
                 </div>
               </div>
             </div>
