@@ -6,7 +6,7 @@ import { authAPI, userAPI } from '@/api';
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string, role: UserRole) => Promise<void>;
-  register: (name: string, email: string, password: string, role: UserRole) => Promise<void>;
+  register: (registrationData: any) => Promise<void>;
   logout: () => void;
   clearError: () => void;
 }
@@ -92,16 +92,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const register = async (name: string, email: string, password: string, role: UserRole) => {
+  const register = async (registrationData: any) => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
       
-      const response = await authAPI.register({
-        name,
-        email,
-        password,
-        role,
-      });
+      const response = await authAPI.register(registrationData);
       
       const { token, data } = response.data;
       

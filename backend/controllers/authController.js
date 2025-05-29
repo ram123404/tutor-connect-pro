@@ -13,7 +13,7 @@ const signToken = (id) => {
 // Register a new user
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, role, phoneNumber, address } = req.body;
+    const { name, email, password, role, phoneNumber, address, tutorDetails } = req.body;
     
     // Check if email already exists
     const existingUser = await User.findOne({ email });
@@ -34,15 +34,19 @@ exports.register = async (req, res) => {
       address,
     });
     
-    // If role is tutor, create an empty tutor profile
+    // If role is tutor, create tutor profile with provided details
     if (role === 'tutor') {
-      await TutorProfile.create({
+      const tutorProfileData = {
         user: newUser._id,
-        subjects: [],
-        experience: 0,
-        availability: '',
-        monthlyRate: 0,
-      });
+        subjects: tutorDetails?.subjects || [],
+        experience: tutorDetails?.experience || 0,
+        availability: tutorDetails?.availability || '',
+        monthlyRate: tutorDetails?.monthlyRate || 0,
+        education: tutorDetails?.education || [],
+        about: tutorDetails?.about || '',
+      };
+      
+      await TutorProfile.create(tutorProfileData);
     }
     
     // Generate JWT token
