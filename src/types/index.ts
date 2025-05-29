@@ -10,6 +10,9 @@ export interface User {
   profilePic?: string;
   isBlocked?: boolean;
   createdAt?: string;
+  gradeLevel?: string;
+  subjects?: string[];
+  learningGoals?: string;
   tutorProfile?: {
     subjects: string[];
     experience: number;

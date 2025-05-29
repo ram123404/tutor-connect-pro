@@ -1,123 +1,188 @@
-
-import React from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { useAuth } from '@/contexts/AuthContext';
-import { userAPI } from '@/api';
-import { toast } from 'sonner';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Loader2 } from 'lucide-react';
-import { StudentProfile as StudentProfileType } from '@/types';
-
-const profileSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  phoneNumber: z.string().min(10, 'Please enter a valid phone number'),
-  address: z.object({
-    city: z.string().min(2, 'City is required'),
-    area: z.string().min(2, 'Area is required'),
-  }),
-});
-
-type ProfileFormData = z.infer<typeof profileSchema>;
+import { toast } from 'sonner';
+import { userAPI } from '@/api';
+import BookingHistory from '@/components/profile/BookingHistory';
 
 const StudentProfile = () => {
-  const { user } = useAuth();
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<ProfileFormData>({
-    resolver: zodResolver(profileSchema),
-    defaultValues: {
-      name: user?.name || '',
-      phoneNumber: (user as StudentProfileType)?.phoneNumber || '',
-      address: {
-        city: (user as StudentProfileType)?.address?.city || '',
-        area: (user as StudentProfileType)?.address?.area || '',
-      },
-    },
+  const { user, isLoading: authLoading } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phoneNumber: '',
+    address: '',
+    gradeLevel: '',
+    subjects: '',
+    learningGoals: '',
   });
 
-  const onSubmit = async (data: ProfileFormData) => {
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        email: user.email || '',
+        phoneNumber: user.phoneNumber || '',
+        address: typeof user.address === 'string' ? user.address : '',
+        gradeLevel: user.gradeLevel || '',
+        subjects: Array.isArray(user.subjects) ? user.subjects.join(', ') : '',
+        learningGoals: user.learningGoals || '',
+      });
+    }
+  }, [user]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
     try {
-      await userAPI.updateProfile(data);
-      toast.success('Profile updated successfully');
-    } catch (error) {
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
+      const { name, phoneNumber, address, gradeLevel, subjects, learningGoals } = formData;
+      const updatedSubjects = subjects.split(',').map(s => s.trim());
+
+      await userAPI.updateUser(user.id, {
+        name,
+        phoneNumber,
+        address,
+        gradeLevel,
+        subjects: updatedSubjects,
+        learningGoals,
+      });
+
+      toast.success('Profile updated successfully!');
+    } catch (error: any) {
       toast.error('Failed to update profile');
+    } finally {
+      setIsSaving(false);
     }
   };
 
+  if (authLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="animate-spin h-6 w-6" />
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto p-4">
       <Card>
         <CardHeader>
-          <CardTitle>Profile Information</CardTitle>
-          <CardDescription>Update your personal information</CardDescription>
+          <CardTitle>Student Profile</CardTitle>
+          <CardDescription>Update your profile information here.</CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                {...register('name')}
-                className={errors.name ? "border-red-500" : ""}
-              />
-              {errors.name && (
-                <p className="text-red-500 text-sm">{errors.name.message}</p>
-              )}
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="phoneNumber">Phone Number</Label>
-              <Input
-                id="phoneNumber"
-                {...register('phoneNumber')}
-                className={errors.phoneNumber ? "border-red-500" : ""}
-              />
-              {errors.phoneNumber && (
-                <p className="text-red-500 text-sm">{errors.phoneNumber.message}</p>
-              )}
-            </div>
-            
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="name">Name</Label>
                 <Input
-                  id="city"
-                  {...register('address.city')}
-                  className={errors.address?.city ? "border-red-500" : ""}
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
                 />
-                {errors.address?.city && (
-                  <p className="text-red-500 text-sm">{errors.address.city.message}</p>
-                )}
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="area">Area</Label>
+              <div>
+                <Label htmlFor="email">Email</Label>
                 <Input
-                  id="area"
-                  {...register('address.area')}
-                  className={errors.address?.area ? "border-red-500" : ""}
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  disabled
                 />
-                {errors.address?.area && (
-                  <p className="text-red-500 text-sm">{errors.address.area.message}</p>
-                )}
               </div>
             </div>
-          </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Changes
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="phoneNumber">Phone Number</Label>
+                <Input
+                  type="tel"
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <Label htmlFor="address">Address</Label>
+                <Input
+                  type="text"
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="gradeLevel">Grade Level</Label>
+                <Input
+                  type="text"
+                  id="gradeLevel"
+                  name="gradeLevel"
+                  value={formData.gradeLevel}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <Label htmlFor="subjects">Subjects (comma-separated)</Label>
+                <Input
+                  type="text"
+                  id="subjects"
+                  name="subjects"
+                  value={formData.subjects}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="learningGoals">Learning Goals</Label>
+              <Textarea
+                id="learningGoals"
+                name="learningGoals"
+                value={formData.learningGoals}
+                onChange={handleChange}
+              />
+            </div>
+            <Button type="submit" disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  Updating <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                </>
+              ) : (
+                'Update Profile'
+              )}
             </Button>
-          </CardFooter>
-        </form>
+          </form>
+        </CardContent>
       </Card>
+      <div className="mt-4">
+        <BookingHistory />
+      </div>
     </div>
   );
 };

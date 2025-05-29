@@ -14,18 +14,24 @@ exports.getBookings = async (req, res) => {
       query.tutor = req.user.id;
     }
     
-    // Get bookings with populated data
+    // Get bookings with populated data and filter by accepted requests
     const bookings = await Booking.find(query)
       .populate('student', 'name email profilePic')
       .populate('tutor', 'name email profilePic')
-      .populate('tuitionRequest')
+      .populate({
+        path: 'tuitionRequest',
+        match: { status: 'accepted' } // Only get bookings for accepted requests
+      })
       .sort({ createdAt: -1 });
+    
+    // Filter out bookings where tuitionRequest is null (not accepted)
+    const validBookings = bookings.filter(booking => booking.tuitionRequest !== null);
     
     // Update status based on end date
     const now = new Date();
     const updatedBookings = [];
     
-    for (let booking of bookings) {
+    for (let booking of validBookings) {
       if (booking.status === 'active' && new Date(booking.endDate) < now) {
         booking.status = 'completed';
         await booking.save();

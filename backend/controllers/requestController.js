@@ -1,4 +1,3 @@
-
 const TuitionRequest = require('../models/TuitionRequest');
 const Booking = require('../models/Booking');
 const User = require('../models/User');
@@ -143,24 +142,32 @@ exports.acceptRequest = async (req, res) => {
     const endDate = new Date(startDate);
     endDate.setMonth(endDate.getMonth() + request.duration);
     
-    const newBooking = await Booking.create({
-      tuitionRequest: request._id,
-      student: request.student,
-      tutor: request.tutor,
-      subject: request.subject,
-      startDate: startDate,
-      endDate: endDate,
-      daysOfWeek: request.preferredDays,
-      timeSlot: request.preferredTime,
-      monthlyFee: request.monthlyFee,
-      status: 'active',
-    });
+    // Check if booking already exists for this request
+    const existingBooking = await Booking.findOne({ tuitionRequest: request._id });
+    
+    let booking;
+    if (!existingBooking) {
+      booking = await Booking.create({
+        tuitionRequest: request._id,
+        student: request.student,
+        tutor: request.tutor,
+        subject: request.subject,
+        startDate: startDate,
+        endDate: endDate,
+        daysOfWeek: request.preferredDays,
+        timeSlot: request.preferredTime,
+        monthlyFee: request.monthlyFee,
+        status: 'active',
+      });
+    } else {
+      booking = existingBooking;
+    }
     
     res.status(200).json({
       status: 'success',
       data: {
         request,
-        booking: newBooking,
+        booking: booking,
       },
     });
   } catch (error) {
