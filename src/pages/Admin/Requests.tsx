@@ -31,7 +31,27 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { format } from 'date-fns';
+import { format, isValid, parseISO } from 'date-fns';
+
+// Helper function to safely parse and format dates
+const safeFormatDate = (dateString: string | null | undefined, formatString: string = 'MMM d, yyyy'): string => {
+  if (!dateString) return 'Not specified';
+  
+  try {
+    let date: Date;
+    if (typeof dateString === 'string') {
+      date = dateString.includes('T') ? parseISO(dateString) : new Date(dateString);
+    } else {
+      date = new Date(dateString);
+    }
+    
+    if (!isValid(date)) return 'Invalid date';
+    return format(date, formatString);
+  } catch (error) {
+    console.error('Date parsing error:', error);
+    return 'Invalid date';
+  }
+};
 
 interface TuitionRequest {
   _id: string;
@@ -205,9 +225,9 @@ const Requests: React.FC = () => {
                     <TableCell className="font-medium">{request.subject}</TableCell>
                     <TableCell>{request.student.name}</TableCell>
                     <TableCell>{request.tutor.name}</TableCell>
-                    <TableCell>{format(new Date(request.createdAt), 'MMM d, yyyy')}</TableCell>
+                    <TableCell>{safeFormatDate(request.createdAt)}</TableCell>
                     <TableCell>{request.duration} months</TableCell>
-                    <TableCell>${request.monthlyFee}/mo</TableCell>
+                    <TableCell>₹{request.monthlyFee}/mo</TableCell>
                     <TableCell>
                       <Badge
                         variant={
@@ -263,7 +283,7 @@ const Requests: React.FC = () => {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm">Monthly Fee:</span>
-                      <span className="font-medium">${selectedRequest.monthlyFee}</span>
+                      <span className="font-medium">₹{selectedRequest.monthlyFee}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm">Duration:</span>
@@ -286,7 +306,7 @@ const Requests: React.FC = () => {
                     <div className="flex justify-between">
                       <span className="text-sm">Created:</span>
                       <span className="font-medium">
-                        {format(new Date(selectedRequest.createdAt), 'MMM d, yyyy')}
+                        {safeFormatDate(selectedRequest.createdAt)}
                       </span>
                     </div>
                   </div>
@@ -297,13 +317,13 @@ const Requests: React.FC = () => {
                     <div className="flex justify-between">
                       <span className="text-sm">Start Date:</span>
                       <span className="font-medium">
-                        {format(new Date(selectedRequest.startDate), 'MMM d, yyyy')}
+                        {safeFormatDate(selectedRequest.startDate)}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm">End Date:</span>
                       <span className="font-medium">
-                        {format(new Date(selectedRequest.endDate), 'MMM d, yyyy')}
+                        {safeFormatDate(selectedRequest.endDate)}
                       </span>
                     </div>
                     <div className="flex justify-between">
