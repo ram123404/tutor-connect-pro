@@ -1,3 +1,4 @@
+
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const TutorProfile = require('../models/TutorProfile');
@@ -77,14 +78,6 @@ exports.login = async (req, res) => {
         message: 'Please provide email and password',
       });
     }
-    
-    // Additional validation for admin login
-    if (role === 'admin' && !email.endsWith('@admin.com')) {
-      return res.status(401).json({
-        status: 'fail',
-        message: 'Invalid admin credentials',
-      });
-    }
 
     // Find user by email and explicitly select the password
     const user = await User.findOne({ email }).select('+password');
@@ -97,7 +90,7 @@ exports.login = async (req, res) => {
       });
     }
     
-    // Check if the role matches
+    // Check if the role matches (if role is provided)
     if (role && user.role !== role) {
       return res.status(401).json({
         status: 'fail',

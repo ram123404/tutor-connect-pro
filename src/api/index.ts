@@ -79,6 +79,16 @@ export const requestAPI = {
   },
 };
 
+// Booking API functions
+export const bookingAPI = {
+  getBookings: async () => {
+    return await api.get('/bookings');
+  },
+  updateBookingStatus: async (id: string, status: string) => {
+    return await api.put(`/bookings/${id}/status`, { status });
+  },
+};
+
 // Admin API functions
 export const adminAPI = {
   getAllUsers: async () => {

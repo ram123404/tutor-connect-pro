@@ -4,16 +4,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { requestAPI } from '@/api';
+import { bookingAPI } from '@/api';
 import { toast } from 'sonner';
-import { Booking } from '@/types';
 
 const BookingHistory = () => {
   const { data: bookings, isLoading, error } = useQuery({
     queryKey: ['bookings'],
     queryFn: async () => {
-      const response = await requestAPI.getRequests();
-      return response.data.data.requests;
+      const response = await bookingAPI.getBookings();
+      return response.data.data.bookings;
     },
   });
 
@@ -34,9 +33,9 @@ const BookingHistory = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {bookings?.map((booking: Booking) => (
+          {bookings?.map((booking: any) => (
             <div
-              key={booking.id}
+              key={booking._id}
               className="flex items-center justify-between border-b pb-4 last:border-0"
             >
               <div>

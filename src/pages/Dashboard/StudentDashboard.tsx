@@ -1,48 +1,50 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, Search, Clock, Check, X, UserPlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-// Mock data for the student dashboard
-const mockRequests = [
-  {
-    id: 'req1',
-    tutorName: 'Prof. Robert Johnson',
-    subject: 'Mathematics',
-    status: 'pending',
-    date: '2024-04-28',
-  },
-  {
-    id: 'req2',
-    tutorName: 'Dr. Emily Wilson',
-    subject: 'Physics',
-    status: 'accepted',
-    date: '2024-04-25',
-  },
-  {
-    id: 'req3',
-    tutorName: 'Ms. Sarah Thompson',
-    subject: 'English Literature',
-    status: 'rejected',
-    date: '2024-04-22',
-  }
-];
-
-const mockBookings = [
-  {
-    id: 'book1',
-    tutorName: 'Dr. Emily Wilson',
-    subject: 'Physics',
-    nextSession: '2024-04-29, 3:00 PM',
-    remainingSessions: 7,
-  },
-];
+import { requestAPI, bookingAPI } from '@/api';
+import { toast } from 'sonner';
 
 const StudentDashboard: React.FC = () => {
   const { user } = useAuth();
+  const [requests, setRequests] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [requestsResponse, bookingsResponse] = await Promise.all([
+        requestAPI.getRequests(),
+        bookingAPI.getBookings()
+      ]);
+      
+      setRequests(requestsResponse.data.data.requests);
+      setBookings(bookingsResponse.data.data.bookings);
+    } catch (error) {
+      toast.error('Failed to fetch dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center p-12">
+        <p>Loading dashboard...</p>
+      </div>
+    );
+  }
+
+  const activeBookings = bookings.filter(booking => booking.status === 'active');
+  const recentRequests = requests.slice(0, 3);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -98,7 +100,7 @@ const StudentDashboard: React.FC = () => {
           </CardContent>
           <CardFooter>
             <Link to="/bookings">
-              <Button className="w-full">View Bookings</Button>
+              <Button className="w-full">View Bookings ({activeBookings.length})</Button>
             </Link>
           </CardFooter>
         </Card>
@@ -114,11 +116,11 @@ const StudentDashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {mockRequests.map((request) => (
-                <div key={request.id} className="flex items-center justify-between border-b pb-2 last:border-0">
+              {recentRequests.map((request) => (
+                <div key={request._id} className="flex items-center justify-between border-b pb-2 last:border-0">
                   <div>
                     <p className="font-medium">{request.subject}</p>
-                    <p className="text-sm text-muted-foreground">{request.tutorName}</p>
+                    <p className="text-sm text-muted-foreground">{request.tutor.name}</p>
                   </div>
                   <div className="flex items-center">
                     {request.status === 'pending' && (
@@ -142,10 +144,15 @@ const StudentDashboard: React.FC = () => {
                   </div>
                 </div>
               ))}
+              {recentRequests.length === 0 && (
+                <p className="text-center text-muted-foreground py-4">No requests found</p>
+              )}
             </div>
           </CardContent>
           <CardFooter>
-            <Button variant="outline" className="w-full">View All Requests</Button>
+            <Link to="/requests">
+              <Button variant="outline" className="w-full">View All Requests</Button>
+            </Link>
           </CardFooter>
         </Card>
 
@@ -158,17 +165,17 @@ const StudentDashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {mockBookings.length > 0 ? (
-                mockBookings.map((booking) => (
-                  <div key={booking.id} className="flex items-center justify-between border-b pb-2 last:border-0">
+              {activeBookings.length > 0 ? (
+                activeBookings.slice(0, 3).map((booking) => (
+                  <div key={booking._id} className="flex items-center justify-between border-b pb-2 last:border-0">
                     <div>
                       <p className="font-medium">{booking.subject}</p>
-                      <p className="text-sm text-muted-foreground">{booking.tutorName}</p>
+                      <p className="text-sm text-muted-foreground">{booking.tutor.name}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium">{booking.nextSession}</p>
+                      <p className="text-sm font-medium">{booking.timeSlot}</p>
                       <p className="text-xs text-muted-foreground text-right">
-                        {booking.remainingSessions} sessions remaining
+                        {booking.daysOfWeek.join(', ')}
                       </p>
                     </div>
                   </div>
