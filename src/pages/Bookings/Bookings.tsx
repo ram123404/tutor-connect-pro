@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { requestAPI } from '@/api';
+import { bookingAPI, requestAPI } from '@/api';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, Clock, MapPin, UserCheck, Calendar as CalendarIcon } from 'lucide-react';
@@ -16,14 +16,14 @@ import { Booking } from '@/types';
 import { Navigate, Link } from 'react-router-dom';
 
 const BookingCard: React.FC<{
-  booking: any;
+  booking: Booking;
   onExtend: (bookingId: string, months: number) => void;
 }> = ({ booking, onExtend }) => {
   const [extensionMonths, setExtensionMonths] = useState(1);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   const handleExtend = () => {
-    onExtend(booking.id, extensionMonths);
+    onExtend(booking._id, extensionMonths);
     setIsDialogOpen(false);
   };
   
@@ -44,11 +44,11 @@ const BookingCard: React.FC<{
           <div>
             <CardTitle className="text-lg">{booking.subject}</CardTitle>
             <CardDescription>
-              {booking.tutorName}
+              {booking.tutor.name}
             </CardDescription>
           </div>
           <Badge variant={isActive ? "default" : "outline"}>
-            {isActive ? "Active" : booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+            {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
           </Badge>
         </div>
       </CardHeader>
@@ -68,7 +68,7 @@ const BookingCard: React.FC<{
           <span>{booking.timeSlot}</span>
         </div>
         <div className="font-medium mt-2">
-          ${booking.monthlyFee}/month
+          ₹{booking.monthlyFee}/month
         </div>
       </CardContent>
       <CardFooter>
@@ -102,7 +102,7 @@ const BookingCard: React.FC<{
                 <div className="col-span-4 text-sm">
                   <p className="font-medium">New end date will be:</p>
                   <p>{format(addMonths(endDate, extensionMonths), 'MMMM d, yyyy')}</p>
-                  <p className="mt-2">Total additional cost: ${booking.monthlyFee * extensionMonths}</p>
+                  <p className="mt-2">Total additional cost: ₹{booking.monthlyFee * extensionMonths}</p>
                 </div>
               </div>
               <DialogFooter>
@@ -120,7 +120,7 @@ const BookingCard: React.FC<{
 
 const Bookings: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
-  const [bookings, setBookings] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
@@ -132,31 +132,8 @@ const Bookings: React.FC = () => {
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const response = await requestAPI.getRequests();
-      
-      // Filter out only the accepted requests that would have bookings
-      const acceptedRequests = response.data.data.requests.filter(
-        (request: any) => request.status === 'accepted'
-      );
-      
-      // Transform requests data to booking format (in a real app, you'd fetch bookings directly)
-      const bookingsData = acceptedRequests.map((req: any) => ({
-        id: req._id,
-        requestId: req._id,
-        subject: req.subject,
-        tutorName: req.tutor.name,
-        tutorId: req.tutor._id,
-        studentId: req.student._id,
-        startDate: req.startDate,
-        endDate: req.endDate,
-        daysOfWeek: req.preferredDays,
-        timeSlot: req.preferredTime,
-        monthlyFee: req.monthlyFee,
-        status: 'active',
-        createdAt: req.createdAt,
-      }));
-      
-      setBookings(bookingsData);
+      const response = await bookingAPI.getBookings();
+      setBookings(response.data.data.bookings || []);
     } catch (error) {
       toast.error('Failed to fetch bookings');
     } finally {
@@ -169,19 +146,8 @@ const Bookings: React.FC = () => {
       await requestAPI.extendBooking({ bookingId, additionalMonths });
       toast.success('Extension request sent successfully!');
       
-      // Update the booking in the local state (this is a simplified version)
-      setBookings((prevBookings) =>
-        prevBookings.map((booking) => {
-          if (booking.id === bookingId) {
-            return {
-              ...booking,
-              endDate: format(addMonths(new Date(booking.endDate), additionalMonths), 'yyyy-MM-dd'),
-              extended: true,
-            };
-          }
-          return booking;
-        })
-      );
+      // Refresh bookings to get updated data
+      fetchBookings();
     } catch (error) {
       toast.error('Failed to extend booking');
     }
@@ -223,15 +189,15 @@ const Bookings: React.FC = () => {
           <TabsContent value="active" className="mt-6">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {bookings
-                .filter(booking => booking.status === 'active' && new Date(booking.endDate) >= new Date())
+                .filter(booking => booking.status === 'active')
                 .map((booking) => (
                   <BookingCard
-                    key={booking.id}
+                    key={booking._id}
                     booking={booking}
                     onExtend={handleExtendBooking}
                   />
                 ))}
-              {bookings.filter(booking => booking.status === 'active' && new Date(booking.endDate) >= new Date()).length === 0 && (
+              {bookings.filter(booking => booking.status === 'active').length === 0 && (
                 <div className="col-span-full text-center py-12">
                   <p>No active bookings</p>
                 </div>
@@ -241,15 +207,15 @@ const Bookings: React.FC = () => {
           <TabsContent value="completed" className="mt-6">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {bookings
-                .filter(booking => booking.status === 'completed' || new Date(booking.endDate) < new Date())
+                .filter(booking => booking.status === 'completed')
                 .map((booking) => (
                   <BookingCard
-                    key={booking.id}
+                    key={booking._id}
                     booking={booking}
                     onExtend={handleExtendBooking}
                   />
                 ))}
-              {bookings.filter(booking => booking.status === 'completed' || new Date(booking.endDate) < new Date()).length === 0 && (
+              {bookings.filter(booking => booking.status === 'completed').length === 0 && (
                 <div className="col-span-full text-center py-12">
                   <p>No completed bookings</p>
                 </div>

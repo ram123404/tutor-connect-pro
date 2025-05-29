@@ -23,18 +23,21 @@ exports.getBookings = async (req, res) => {
     
     // Update status based on end date
     const now = new Date();
+    const updatedBookings = [];
+    
     for (let booking of bookings) {
       if (booking.status === 'active' && new Date(booking.endDate) < now) {
         booking.status = 'completed';
         await booking.save();
       }
+      updatedBookings.push(booking);
     }
     
     res.status(200).json({
       status: 'success',
-      results: bookings.length,
+      results: updatedBookings.length,
       data: {
-        bookings,
+        bookings: updatedBookings,
       },
     });
   } catch (error) {

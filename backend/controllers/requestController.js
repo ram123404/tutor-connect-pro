@@ -44,7 +44,7 @@ exports.createRequest = async (req, res) => {
       preferredDays,
       preferredTime,
       duration,
-      startDate,
+      startDate: new Date(startDate),
       monthlyFee,
       notes,
     });
@@ -138,17 +138,22 @@ exports.acceptRequest = async (req, res) => {
     request.status = 'accepted';
     await request.save();
     
-    // Create booking
+    // Create booking with proper end date calculation
+    const startDate = new Date(request.startDate);
+    const endDate = new Date(startDate);
+    endDate.setMonth(endDate.getMonth() + request.duration);
+    
     const newBooking = await Booking.create({
       tuitionRequest: request._id,
       student: request.student,
       tutor: request.tutor,
       subject: request.subject,
-      startDate: request.startDate,
-      endDate: request.endDate,
+      startDate: startDate,
+      endDate: endDate,
       daysOfWeek: request.preferredDays,
       timeSlot: request.preferredTime,
       monthlyFee: request.monthlyFee,
+      status: 'active',
     });
     
     res.status(200).json({
