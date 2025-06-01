@@ -23,7 +23,7 @@ interface TutorType {
     availability: string;
     rating: number;
     monthlyRate: number;
-  };
+  } | null;
 }
 
 const Tutors: React.FC = () => {
@@ -53,10 +53,10 @@ const Tutors: React.FC = () => {
   const filteredTutors = tutors.filter((tutor) => {
     const matchesSearch = 
       tutor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      tutor.tutorProfile.subjects.some(subject => subject.toLowerCase().includes(searchQuery.toLowerCase()));
+      (tutor.tutorProfile?.subjects?.some(subject => subject.toLowerCase().includes(searchQuery.toLowerCase())) || false);
     
     const matchesSubject = subjectFilter === '' || 
-      tutor.tutorProfile.subjects.some(subject => subject.toLowerCase().includes(subjectFilter.toLowerCase()));
+      (tutor.tutorProfile?.subjects?.some(subject => subject.toLowerCase().includes(subjectFilter.toLowerCase())) || false);
     
     const matchesLocation = locationFilter === '' || 
       (tutor.address && 
@@ -126,7 +126,7 @@ const Tutors: React.FC = () => {
                     <CardTitle className="text-lg">{tutor.name}</CardTitle>
                     <div className="flex items-center text-sm text-amber-500">
                       <Star className="h-3.5 w-3.5 mr-1 fill-amber-500" />
-                      <span>{tutor.tutorProfile.rating || 'New'}</span>
+                      <span>{tutor.tutorProfile?.rating || 'New'}</span>
                     </div>
                   </div>
                 </div>
@@ -136,11 +136,11 @@ const Tutors: React.FC = () => {
                   <div className="flex items-center text-sm">
                     <BookOpen className="h-4 w-4 mr-2 text-primary" />
                     <div className="flex flex-wrap gap-1">
-                      {tutor.tutorProfile.subjects.map((subject) => (
+                      {tutor.tutorProfile?.subjects?.map((subject) => (
                         <Badge key={subject} variant="secondary" className="font-normal">
                           {subject}
                         </Badge>
-                      ))}
+                      )) || <span className="text-muted-foreground">No subjects listed</span>}
                     </div>
                   </div>
                   {tutor.address && (
@@ -151,10 +151,10 @@ const Tutors: React.FC = () => {
                   )}
                   <div className="flex items-center text-sm">
                     <Clock className="h-4 w-4 mr-2 text-primary" />
-                    <span>{tutor.tutorProfile.availability}</span>
+                    <span>{tutor.tutorProfile?.availability || 'Not specified'}</span>
                   </div>
                   <div className="mt-2 text-sm">
-                    <span className="font-semibold">${tutor.tutorProfile.monthlyRate}/month</span> • {tutor.tutorProfile.experience} years experience
+                    <span className="font-semibold">${tutor.tutorProfile?.monthlyRate || 0}/month</span> • {tutor.tutorProfile?.experience || 0} years experience
                   </div>
                 </div>
               </CardContent>
