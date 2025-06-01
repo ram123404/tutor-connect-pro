@@ -56,9 +56,9 @@ const StudentProfile = () => {
       }
 
       const { name, phoneNumber, address, gradeLevel, subjects, learningGoals } = formData;
-      const updatedSubjects = subjects.split(',').map(s => s.trim());
+      const updatedSubjects = subjects.split(',').map(s => s.trim()).filter(s => s);
 
-      await userAPI.updateUser(user.id, {
+      await userAPI.updateProfile({
         name,
         phoneNumber,
         address,

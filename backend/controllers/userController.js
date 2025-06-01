@@ -29,7 +29,7 @@ exports.getMe = async (req, res) => {
 // Update user profile
 exports.updateMe = async (req, res) => {
   try {
-    const { name, phoneNumber, address, profilePic } = req.body;
+    const { name, phoneNumber, address, profilePic, gradeLevel, subjects, learningGoals } = req.body;
     
     // Filter out unwanted fields that are not allowed to be updated
     const filteredBody = {
@@ -37,6 +37,9 @@ exports.updateMe = async (req, res) => {
       ...(phoneNumber && { phoneNumber }),
       ...(address && { address }),
       ...(profilePic && { profilePic }),
+      ...(gradeLevel && { gradeLevel }),
+      ...(subjects && { subjects }),
+      ...(learningGoals && { learningGoals }),
     };
     
     // Update user

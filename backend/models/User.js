@@ -33,10 +33,22 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
     address: {
-      city: String,
-      area: String,
+      type: String,
+      trim: true,
     },
     profilePic: String,
+    gradeLevel: {
+      type: String,
+      trim: true,
+    },
+    subjects: {
+      type: [String],
+      default: [],
+    },
+    learningGoals: {
+      type: String,
+      trim: true,
+    },
     isActive: {
       type: Boolean,
       default: true,
